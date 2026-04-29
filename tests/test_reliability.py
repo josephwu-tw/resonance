@@ -68,16 +68,19 @@ class TestGuardrails:
     def test_validate_accepts_valid_query(self):
         assert _validate("chill lo-fi for studying") is None
 
-    def test_parse_preferences_returns_dict_when_api_fails(self):
-        """Agent must return a dict even when Claude is unavailable."""
+    def test_parse_preferences_returns_tuple_when_api_fails(self):
+        """Agent must return (dict, float) even when Claude is unavailable."""
         with patch("src.agent._get_client") as mock_client:
             mock_client.return_value.messages.create.side_effect = Exception("network error")
-            result = agent.parse_preferences("upbeat pop song")
-        assert isinstance(result, dict)
+            prefs, confidence = agent.parse_preferences("upbeat pop song")
+        assert isinstance(prefs, dict)
+        assert isinstance(confidence, float)
+        assert 0.0 <= confidence <= 1.0
 
     def test_parse_preferences_handles_empty_query(self):
-        result = agent.parse_preferences("")
-        assert isinstance(result, dict)
+        prefs, confidence = agent.parse_preferences("")
+        assert isinstance(prefs, dict)
+        assert isinstance(confidence, float)
 
     def test_generate_explanation_returns_string_when_api_fails(self, songs):
         prefs = {"genre": "pop", "mood": "happy", "energy": 0.8}
@@ -107,7 +110,51 @@ class TestGuardrails:
         assert len(results) <= 5
 
 
-# ── 3. Scoring invariants ─────────────────────────────────────────────────────
+# ── 3. Confidence scoring ─────────────────────────────────────────────────────
+
+class TestConfidence:
+    def test_keyword_fallback_confidence_is_in_range(self):
+        """Keyword-parsed confidence must always be between 0 and 1."""
+        for query in ("chill lofi", "pop happy", "something", ""):
+            _, confidence = agent.parse_preferences(query)
+            assert 0.0 <= confidence <= 1.0, f"Out-of-range confidence for {query!r}"
+
+    def test_empty_query_gives_low_confidence(self):
+        """An empty query should return the lowest confidence tier."""
+        _, confidence = agent.parse_preferences("")
+        assert confidence <= 0.3
+
+    def test_specific_query_gives_higher_confidence_than_vague(self):
+        """A query with explicit genre + mood should score higher than a vague one.
+        Tests the keyword parser so no API needed."""
+        _, conf_specific = agent.parse_preferences("chill lofi beats for studying")
+        _, conf_vague    = agent.parse_preferences("")
+        assert conf_specific > conf_vague
+
+    def test_match_quality_labels(self, songs):
+        from src.main import _match_quality
+        assert _match_quality(0.80) == "strong"
+        assert _match_quality(0.60) == "moderate"
+        assert _match_quality(0.30) == "weak"
+
+    def test_strong_genre_match_produces_strong_quality(self, songs):
+        """A well-matched profile should always hit the 'strong' threshold."""
+        from src.main import _match_quality
+        prefs = {"genre": "pop", "mood": "happy", "energy": 0.82}
+        results = recommend_songs(prefs, songs, k=5)
+        assert _match_quality(results[0][1]) == "strong"
+
+    def test_impossible_profile_produces_lower_quality(self, songs):
+        """A profile the catalog can't satisfy should score below 'strong'."""
+        from src.main import _match_quality
+        # No song in the catalog is both 'classical' and energy 0.99
+        prefs = {"genre": "classical", "mood": "intense", "energy": 0.99}
+        results = recommend_songs(prefs, songs, k=5)
+        quality = _match_quality(results[0][1])
+        assert quality in ("moderate", "weak")
+
+
+# ── 4. Scoring invariants ─────────────────────────────────────────────────────
 
 class TestScoring:
     def test_scores_are_non_negative(self, songs):

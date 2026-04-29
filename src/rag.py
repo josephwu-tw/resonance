@@ -1,14 +1,20 @@
 """
 RAG layer — semantic retrieval over the song catalog.
 
-Uses sentence-transformers to embed song descriptions and a user query,
-then returns the closest candidates by cosine similarity so the scoring
-engine only re-ranks a relevant shortlist rather than the full catalog.
-Falls back to returning the full catalog if the model is unavailable.
+RAG Enhancement (stretch feature):
+  Accepts an optional genre_profiles dict (from data/genre_profiles.json).
+  When provided, each song's embedding text is augmented with its genre's
+  rich conceptual description — adding vocabulary like "vinyl crackle",
+  "neon-lit synths", or "tape hiss" that never appears in songs.csv.
+  This lets queries using conceptual language retrieve the right genre
+  even when no song label directly matches the user's words.
+
+  Retrieval improvement is measurable via compare_retrieval(), which runs
+  the same query against both plain and augmented indexes and returns scores.
 """
 
 import logging
-from typing import Dict, List
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 
@@ -27,13 +33,18 @@ except ImportError:
 _MODEL_NAME = "all-MiniLM-L6-v2"
 
 
-def _song_to_text(song: Dict) -> str:
-    """Render a song dict as a descriptive sentence for embedding."""
+def _song_to_text(song: Dict, genre_profile: Optional[Dict] = None) -> str:
+    """Render a song dict as a descriptive sentence for embedding.
+
+    If genre_profile is provided its description is appended, giving the
+    embedding richer conceptual vocabulary beyond the raw song labels.
+    """
     tags = song.get("mood_tags", [])
     if isinstance(tags, str):
         tags = [t.strip() for t in tags.split(";") if t.strip()]
     tag_str = ", ".join(tags) if tags else "none"
-    return (
+
+    base = (
         f"{song['title']} by {song['artist']}. "
         f"Genre: {song['genre']}. Mood: {song['mood']}. "
         f"Energy: {float(song['energy']):.2f}. "
@@ -41,29 +52,48 @@ def _song_to_text(song: Dict) -> str:
         f"Tags: {tag_str}."
     )
 
+    if genre_profile:
+        base = f"{base} {genre_profile.get('description', '')}"
+
+    return base
+
 
 class SongIndex:
     """Semantic search index over the song catalog.
 
-    Build once at startup, then call .search() for every user query.
+    RAG Enhancement: pass genre_profiles to augment song embeddings with
+    rich genre descriptions, improving retrieval for conceptual queries.
     """
 
-    def __init__(self, songs: List[Dict]) -> None:
+    def __init__(
+        self,
+        songs: List[Dict],
+        genre_profiles: Optional[Dict] = None,
+    ) -> None:
         self.songs = songs
-        self._embeddings: np.ndarray | None = None
-        self._model: "SentenceTransformer | None" = None
+        self._genre_profiles = genre_profiles or {}
+        self._embeddings: Optional[np.ndarray] = None
+        self._model: Optional["SentenceTransformer"] = None
+        self._augmented = bool(genre_profiles)
 
         if _HAS_ST:
-            logger.info("Loading sentence-transformer model '%s'…", _MODEL_NAME)
+            logger.info(
+                "Loading sentence-transformer model '%s' (augmented=%s)…",
+                _MODEL_NAME, self._augmented,
+            )
             self._model = SentenceTransformer(_MODEL_NAME)
-            texts = [_song_to_text(s) for s in songs]
+            texts = [
+                _song_to_text(s, self._genre_profiles.get(s.get("genre", "")))
+                for s in songs
+            ]
             self._embeddings = self._model.encode(
                 texts, normalize_embeddings=True, show_progress_bar=False
             )
             logger.info(
-                "SongIndex built: %d songs × %d-dim embeddings",
+                "SongIndex built: %d songs × %d-dim embeddings (profiles: %s)",
                 len(songs),
                 self._embeddings.shape[1],
+                "yes" if self._augmented else "no",
             )
         else:
             logger.info("SongIndex running in keyword-fallback mode (%d songs).", len(songs))
@@ -80,13 +110,44 @@ class SongIndex:
             indices = np.argsort(scores)[::-1][:top_n]
             results = [self.songs[i] for i in indices]
             logger.info(
-                "RAG: retrieved %d candidates for query %r (top score=%.3f)",
-                len(results),
-                query,
-                float(scores[indices[0]]),
+                "RAG: retrieved %d candidates (augmented=%s, top_score=%.3f) for %r",
+                len(results), self._augmented, float(scores[indices[0]]), query,
             )
             return results
 
-        # Fallback: return entire catalog; scoring engine handles ranking
         logger.info("RAG fallback: returning full catalog of %d songs.", len(self.songs))
         return self.songs
+
+    def compare_retrieval(
+        self, query: str, top_n: int = 5
+    ) -> Dict[str, List[Tuple[str, str, float]]]:
+        """Compare retrieval quality with vs without genre profile augmentation.
+
+        Returns a dict with keys 'plain' and 'augmented', each containing a list
+        of (title, genre, similarity_score) tuples for the given query.
+        Only meaningful when sentence-transformers is available.
+        """
+        if self._model is None or self._embeddings is None:
+            return {"plain": [], "augmented": [], "note": "sentence-transformers not available"}
+
+        q_emb = self._model.encode([query], normalize_embeddings=True)
+
+        # Augmented results (this index)
+        aug_scores = (self._embeddings @ q_emb.T).flatten()
+        aug_idx = np.argsort(aug_scores)[::-1][:top_n]
+        augmented = [
+            (self.songs[i]["title"], self.songs[i]["genre"], float(aug_scores[i]))
+            for i in aug_idx
+        ]
+
+        # Plain results (rebuild texts without profiles)
+        plain_texts = [_song_to_text(s) for s in self.songs]
+        plain_emb = self._model.encode(plain_texts, normalize_embeddings=True, show_progress_bar=False)
+        plain_scores = (plain_emb @ q_emb.T).flatten()
+        plain_idx = np.argsort(plain_scores)[::-1][:top_n]
+        plain = [
+            (self.songs[i]["title"], self.songs[i]["genre"], float(plain_scores[i]))
+            for i in plain_idx
+        ]
+
+        return {"plain": plain, "augmented": augmented}

@@ -1,0 +1,6 @@
+2026-04-30 07:33:53,924  INFO      src.logger_setup  Logging started — writing to logs/resonance_20260430_073353.log
+2026-04-30 07:33:53,925  INFO      src.rag  Loading sentence-transformer model 'all-MiniLM-L6-v2' (augmented=True)…
+2026-04-30 07:33:55,695  WARNING   huggingface_hub.utils._http  Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+2026-04-30 07:33:59,215  INFO      src.rag  SongIndex built: 20 songs × 384-dim embeddings (profiles: yes)
+2026-04-30 07:33:59,215  INFO      src.rag  Loading sentence-transformer model 'all-MiniLM-L6-v2' (augmented=False)…
+2026-04-30 07:34:03,731  INFO      src.rag  SongIndex built: 20 songs × 384-dim embeddings (profiles: no)

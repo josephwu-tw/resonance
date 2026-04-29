@@ -1,0 +1,107 @@
+{
+  "lofi": {
+    "label": "Lo-Fi Hip Hop",
+    "description": "Lo-fi hip hop features deliberately imperfect warm recordings with tape hiss vinyl crackle and ambient room noise. Built on slow jazzy chord progressions with muted drums it creates a nostalgic focused atmosphere perfect for late night studying reading or relaxed concentration. Associated with rain sounds coffee shop ambiance analog warmth and city lights through a rainy window.",
+    "energy_range": [0.2, 0.55],
+    "typical_moods": ["chill", "focused", "peaceful", "nostalgic"],
+    "activities": ["studying", "reading", "working", "relaxing", "sleeping", "concentration"]
+  },
+  "pop": {
+    "label": "Pop",
+    "description": "Pop music is crafted for broad appeal with polished production memorable hooks and uplifting energy. Driven by synthesizers clear vocals and modern production it suits morning routines workouts commutes and social gatherings. Pop energizes and elevates mood through danceable rhythms feel-good lyrics and euphoric choruses designed for mainstream radio.",
+    "energy_range": [0.5, 0.95],
+    "typical_moods": ["happy", "energetic", "romantic", "uplifting"],
+    "activities": ["morning routine", "workout", "commute", "party", "getting ready", "dancing"]
+  },
+  "rock": {
+    "label": "Rock",
+    "description": "Rock music combines electric guitars drums and bass into energetic guitar-driven soundscapes. From clean jangly tones to heavy distortion rock spans roadtrip anthems stadium singalongs and intense workout fuel. Characteristic of rebellion passion and raw energy through power chords and driving rhythms.",
+    "energy_range": [0.6, 0.95],
+    "typical_moods": ["intense", "energetic", "happy", "aggressive"],
+    "activities": ["driving", "workout", "gaming", "roadtrip", "rebellion"]
+  },
+  "folk": {
+    "label": "Folk",
+    "description": "Folk music is rooted in acoustic storytelling with guitars banjo and intimate vocals conveying personal narratives and emotion. Quiet and contemplative it suits melancholic evenings autumn walks and reflective introspective moods. Associated with wooden textures open skies honest emotion bittersweet nostalgia and campfire warmth.",
+    "energy_range": [0.2, 0.55],
+    "typical_moods": ["melancholic", "chill", "nostalgic", "romantic"],
+    "activities": ["evening reflection", "nature walks", "heartbreak", "nostalgia", "storytelling"]
+  },
+  "jazz": {
+    "label": "Jazz",
+    "description": "Jazz is a sophisticated genre of improvisation complex harmony and swinging rhythms. From mellow late night piano trios to upbeat big band swing jazz suits coffee shop study sessions dinner backgrounds and contemplative evenings. Rich in texture unpredictability and musical conversation between instruments.",
+    "energy_range": [0.3, 0.7],
+    "typical_moods": ["relaxed", "chill", "focused", "romantic"],
+    "activities": ["coffee shop", "dinner", "studying", "late night", "reading", "background music"]
+  },
+  "classical": {
+    "label": "Classical",
+    "description": "Classical music spans centuries of orchestral and solo works from delicate piano sonatas to sweeping symphonies. Instrumental and often wordless it enhances focus deep thought and emotional depth. Suited for studying reading and moments requiring calm concentrated attention through grand orchestration or intimate solo performance.",
+    "energy_range": [0.1, 0.6],
+    "typical_moods": ["focused", "melancholic", "peaceful", "intense"],
+    "activities": ["studying", "deep work", "reading", "meditation", "emotional processing"]
+  },
+  "hip-hop": {
+    "label": "Hip-Hop",
+    "description": "Hip-hop combines rhythmic vocal delivery with sample-based beats bass-heavy production and urban storytelling. From introspective boom-bap to energetic trap hip-hop captures confidence resilience and street culture. Great for workouts commutes hype sessions and moments needing a motivational boost.",
+    "energy_range": [0.5, 0.9],
+    "typical_moods": ["energetic", "happy", "focused", "intense"],
+    "activities": ["workout", "commute", "hype", "motivation", "driving", "confidence"]
+  },
+  "r&b": {
+    "label": "R&B",
+    "description": "Rhythm and Blues blends soulful expressive vocals with smooth groove-oriented production. Warm intimate and romantic it fits date nights late evenings and emotional processing. Characterized by lush chords expressive singing deep bass and the feeling of velvet midnight.",
+    "energy_range": [0.3, 0.7],
+    "typical_moods": ["romantic", "chill", "happy", "melancholic"],
+    "activities": ["date night", "late evening", "romance", "emotional", "relaxing"]
+  },
+  "edm": {
+    "label": "Electronic Dance Music",
+    "description": "Electronic Dance Music is built for dancefloors with pounding kick drums synthesizer leads and euphoric build-drop structures. High energy and hypnotic EDM suits parties raves intense workouts and peak hour moments of release. Associated with euphoria movement neon lights and crowd energy.",
+    "energy_range": [0.75, 1.0],
+    "typical_moods": ["energetic", "happy", "intense", "euphoric"],
+    "activities": ["party", "rave", "workout", "dancing", "hype", "festival"]
+  },
+  "metal": {
+    "label": "Heavy Metal",
+    "description": "Heavy metal delivers aggressive power through distorted guitars rapid drumming and intense vocals. Cathartic and energizing metal is the choice for maximum intensity workouts stress release and moments demanding raw power. Characterized by technical precision overwhelming volume and controlled aggression.",
+    "energy_range": [0.8, 1.0],
+    "typical_moods": ["intense", "aggressive", "energetic", "powerful"],
+    "activities": ["workout", "stress relief", "gaming", "extreme sports", "release"]
+  },
+  "ambient": {
+    "label": "Ambient",
+    "description": "Ambient music creates immersive soundscapes through texture space and slow evolution rather than melody or rhythm. Meditative and atmospheric it suits deep focus sleep meditation and background listening. Think open horizons distant reverbs suspended time and sound that fills space without demanding attention.",
+    "energy_range": [0.1, 0.35],
+    "typical_moods": ["peaceful", "chill", "focused", "melancholic"],
+    "activities": ["sleep", "meditation", "deep focus", "spa", "background", "yoga"]
+  },
+  "synthwave": {
+    "label": "Synthwave",
+    "description": "Synthwave resurrects the neon lit sound of 1980s cinema and video games with pulsing analog synths driving basslines and nostalgic warmth. Evocative of night drives retro futurism movie montages and rain on neon streets. Sits between melancholy and exhilaration through vintage electronic textures.",
+    "energy_range": [0.45, 0.8],
+    "typical_moods": ["nostalgic", "chill", "energetic", "intense"],
+    "activities": ["night drive", "gaming", "retro vibes", "late night", "80s nostalgia"]
+  },
+  "indie pop": {
+    "label": "Indie Pop",
+    "description": "Indie pop brings the hooks of mainstream pop with DIY spirit and emotional honesty. Jangly guitars warm vocals and personal lyrics create an intimate feel. Great for sunny afternoons creative work gentle emotional resonance and the bittersweet feeling of a good day ending.",
+    "energy_range": [0.4, 0.75],
+    "typical_moods": ["happy", "chill", "melancholic", "romantic"],
+    "activities": ["sunny afternoon", "creative work", "walks", "gentle mood", "daydreaming"]
+  },
+  "soul": {
+    "label": "Soul",
+    "description": "Soul music draws from gospel and R&B into deeply emotional raw vocal performances over groove based backing. Warm honest and cathartic soul fits reflective evenings heartfelt moments and genuine human connection. Characterized by call and response melismatic vocals and the feeling of being truly heard.",
+    "energy_range": [0.35, 0.7],
+    "typical_moods": ["romantic", "melancholic", "happy", "chill"],
+    "activities": ["evening reflection", "heartfelt moments", "slow dancing", "emotional healing"]
+  },
+  "country": {
+    "label": "Country",
+    "description": "Country music tells stories of love loss home and working life through acoustic guitars fiddle and honest vocals. From slow ballads to upbeat honky tonk country evokes open roads small towns pickup trucks and genuine unfiltered emotion. Rooted in American folk tradition with storytelling at its heart.",
+    "energy_range": [0.3, 0.75],
+    "typical_moods": ["melancholic", "happy", "nostalgic", "chill"],
+    "activities": ["roadtrip", "evening reflection", "backyard", "heartbreak", "nostalgia"]
+  }
+}

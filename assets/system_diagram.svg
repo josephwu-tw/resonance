@@ -1,0 +1,208 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 760" font-family="Segoe UI, Arial, sans-serif">
+
+  <!-- Background -->
+  <rect width="880" height="760" fill="#f9f9fb" rx="14"/>
+
+  <!-- Title -->
+  <rect x="0" y="0" width="880" height="46" rx="14" fill="#1e1e2e"/>
+  <rect x="0" y="30" width="880" height="16" fill="#1e1e2e"/>
+  <text x="440" y="28" text-anchor="middle" font-size="15" font-weight="bold" fill="white" letter-spacing="1">Resonance — System Diagram</text>
+
+  <!-- ═══════════════════════════════════════════════════════
+       COLUMN HEADERS
+  ════════════════════════════════════════════════════════ -->
+
+  <!-- Main Flow label -->
+  <text x="340" y="72" text-anchor="middle" font-size="11" fill="#888" font-style="italic">Main Flow</text>
+  <!-- Data label -->
+  <text x="668" y="72" text-anchor="middle" font-size="11" fill="#888" font-style="italic">Data</text>
+  <!-- Testing label -->
+  <text x="790" y="72" text-anchor="middle" font-size="11" fill="#888" font-style="italic">Testing</text>
+
+  <!-- Vertical dividers -->
+  <line x1="600" y1="56" x2="600" y2="710" stroke="#e0e0e8" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="728" y1="56" x2="728" y2="710" stroke="#e0e0e8" stroke-width="1" stroke-dasharray="4,3"/>
+
+  <!-- ═══════════════════════════════════════════════════════
+       HUMAN — INPUT
+  ════════════════════════════════════════════════════════ -->
+  <ellipse cx="340" cy="104" rx="54" ry="22" fill="#5c4fcb" stroke="#3d32a8" stroke-width="1.5"/>
+  <text x="340" y="108" text-anchor="middle" font-size="12" font-weight="bold" fill="white">User</text>
+
+  <!-- "human" badge -->
+  <rect x="376" y="90" width="46" height="16" rx="8" fill="#f0ecff" stroke="#9b8fe0" stroke-width="1"/>
+  <text x="399" y="102" text-anchor="middle" font-size="9" fill="#5c4fcb">human</text>
+
+  <!-- Arrow: User → Guardrails -->
+  <line x1="340" y1="126" x2="340" y2="158" stroke="#555" stroke-width="1.8" marker-end="url(#arr)"/>
+  <text x="355" y="146" font-size="9" fill="#888">query</text>
+
+  <!-- ═══════════════════════════════════════════════════════
+       INPUT GUARDRAILS
+  ════════════════════════════════════════════════════════ -->
+  <rect x="210" y="158" width="260" height="54" rx="8" fill="#fff3cd" stroke="#e0a800" stroke-width="1.5"/>
+  <text x="340" y="179" text-anchor="middle" font-size="12" font-weight="bold" fill="#856404">Input Guardrails</text>
+  <text x="340" y="196" text-anchor="middle" font-size="10" fill="#856404">length check · empty check · sanitize</text>
+
+  <!-- Arrow: Guardrails → RAG -->
+  <line x1="340" y1="212" x2="340" y2="244" stroke="#555" stroke-width="1.8" marker-end="url(#arr)"/>
+  <text x="355" y="232" font-size="9" fill="#888">clean query</text>
+
+  <!-- ═══════════════════════════════════════════════════════
+       RAG RETRIEVER
+  ════════════════════════════════════════════════════════ -->
+  <rect x="210" y="244" width="260" height="62" rx="8" fill="#edf7ed" stroke="#4caf50" stroke-width="1.5"/>
+  <text x="340" y="265" text-anchor="middle" font-size="12" font-weight="bold" fill="#2e7d32">RAG Retriever</text>
+  <text x="340" y="281" text-anchor="middle" font-size="10" fill="#2e7d32">sentence-transformers embeddings</text>
+  <text x="340" y="296" text-anchor="middle" font-size="10" fill="#2e7d32">cosine similarity → top-15 candidates</text>
+
+  <!-- Arrow: RAG → Intent Parser -->
+  <line x1="340" y1="306" x2="340" y2="338" stroke="#555" stroke-width="1.8" marker-end="url(#arr)"/>
+  <text x="355" y="326" font-size="9" fill="#888">15 candidates</text>
+
+  <!-- ═══════════════════════════════════════════════════════
+       CLAUDE AGENT — INTENT PARSER
+  ════════════════════════════════════════════════════════ -->
+  <rect x="210" y="338" width="260" height="62" rx="8" fill="#e8f4fd" stroke="#4a90d9" stroke-width="1.5"/>
+  <text x="340" y="359" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c6fad">Claude Agent — Intent Parser</text>
+  <text x="340" y="375" text-anchor="middle" font-size="10" fill="#2c6fad">extracts genre · mood · energy · tags</text>
+  <text x="340" y="390" text-anchor="middle" font-size="10" fill="#2c6fad">structured preference dict</text>
+
+  <!-- Arrow: Intent Parser → Scoring Engine -->
+  <line x1="340" y1="400" x2="340" y2="432" stroke="#555" stroke-width="1.8" marker-end="url(#arr)"/>
+  <text x="355" y="420" font-size="9" fill="#888">prefs + candidates</text>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SCORING ENGINE  (mini-project core)
+  ════════════════════════════════════════════════════════ -->
+  <rect x="210" y="432" width="260" height="72" rx="8" fill="#fef6e4" stroke="#f5a623" stroke-width="1.5"/>
+  <!-- "mini-project core" badge -->
+  <rect x="338" y="426" width="90" height="14" rx="7" fill="#f5a623"/>
+  <text x="383" y="436" text-anchor="middle" font-size="8" fill="white" font-weight="bold">mini-project core</text>
+  <text x="340" y="455" text-anchor="middle" font-size="12" font-weight="bold" fill="#b45309">Scoring Engine</text>
+  <text x="340" y="471" text-anchor="middle" font-size="10" fill="#b45309">weighted multi-feature scorer</text>
+  <text x="340" y="486" text-anchor="middle" font-size="10" fill="#b45309">4 modes · diversity re-ranker</text>
+
+  <!-- Arrow: Scoring → Explanation -->
+  <line x1="340" y1="504" x2="340" y2="536" stroke="#555" stroke-width="1.8" marker-end="url(#arr)"/>
+  <text x="355" y="524" font-size="9" fill="#888">top-5 songs</text>
+
+  <!-- ═══════════════════════════════════════════════════════
+       CLAUDE AGENT — EXPLANATION GENERATOR
+  ════════════════════════════════════════════════════════ -->
+  <rect x="210" y="536" width="260" height="62" rx="8" fill="#e8f4fd" stroke="#4a90d9" stroke-width="1.5"/>
+  <text x="340" y="557" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c6fad">Claude Agent — Explanation</text>
+  <text x="340" y="573" text-anchor="middle" font-size="10" fill="#2c6fad">generates natural language summary</text>
+  <text x="340" y="588" text-anchor="middle" font-size="10" fill="#2c6fad">of why each song was chosen</text>
+
+  <!-- Arrow: Explanation → Output -->
+  <line x1="340" y1="598" x2="340" y2="630" stroke="#555" stroke-width="1.8" marker-end="url(#arr)"/>
+  <text x="355" y="618" font-size="9" fill="#888">ranked list + explanation</text>
+
+  <!-- ═══════════════════════════════════════════════════════
+       OUTPUT
+  ════════════════════════════════════════════════════════ -->
+  <rect x="210" y="630" width="260" height="54" rx="8" fill="#5c4fcb" stroke="#3d32a8" stroke-width="1.5"/>
+  <text x="340" y="651" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Recommendations</text>
+  <text x="340" y="668" text-anchor="middle" font-size="10" fill="#ccc8f8">Top-5 songs · scores · explanation</text>
+
+  <!-- Arrow: Output → User (feedback loop) -->
+  <path d="M 210,660 C 140,660 140,104 286,104" fill="none" stroke="#9b8fe0" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr-purple)"/>
+  <text x="118" y="390" text-anchor="middle" font-size="9" fill="#9b8fe0" transform="rotate(-90,118,390)">re-query feedback loop</text>
+
+  <!-- ═══════════════════════════════════════════════════════
+       DATA STORE — Song Catalog
+  ════════════════════════════════════════════════════════ -->
+  <!-- Cylinder shape -->
+  <ellipse cx="668" cy="284" rx="52" ry="12" fill="#c8e6c9" stroke="#4caf50" stroke-width="1.5"/>
+  <rect x="616" y="284" width="104" height="44" fill="#c8e6c9" stroke="#4caf50" stroke-width="1.5"/>
+  <ellipse cx="668" cy="328" rx="52" ry="12" fill="#a5d6a7" stroke="#4caf50" stroke-width="1.5"/>
+  <text x="668" y="307" text-anchor="middle" font-size="11" font-weight="bold" fill="#2e7d32">songs.csv</text>
+  <text x="668" y="321" text-anchor="middle" font-size="9" fill="#2e7d32">20 songs · 15 features</text>
+
+  <!-- Arrow: Catalog → RAG -->
+  <line x1="616" y1="306" x2="472" y2="282" stroke="#4caf50" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#arr-green)"/>
+  <text x="548" y="290" text-anchor="middle" font-size="9" fill="#4caf50">embed at startup</text>
+
+  <!-- Logger strip -->
+  <rect x="616" y="352" width="104" height="60" rx="6" fill="#f3f0ff" stroke="#9b8fe0" stroke-width="1.2"/>
+  <text x="668" y="370" text-anchor="middle" font-size="10" font-weight="bold" fill="#5c4fcb">Logger</text>
+  <text x="668" y="384" text-anchor="middle" font-size="9" fill="#5c4fcb">logs/ directory</text>
+  <text x="668" y="397" text-anchor="middle" font-size="9" fill="#5c4fcb">timestamped .log</text>
+  <text x="668" y="409" text-anchor="middle" font-size="9" fill="#5c4fcb">every step traced</text>
+  <!-- Arrow: Logger spans to main flow -->
+  <line x1="616" y1="382" x2="472" y2="382" stroke="#9b8fe0" stroke-width="1.2" stroke-dasharray="3,2" marker-end="url(#arr-purple)"/>
+
+  <!-- ═══════════════════════════════════════════════════════
+       TESTING PANEL
+  ════════════════════════════════════════════════════════ -->
+  <rect x="736" y="158" width="120" height="240" rx="8" fill="#fff8f0" stroke="#f5a623" stroke-width="1.5"/>
+  <text x="796" y="178" text-anchor="middle" font-size="11" font-weight="bold" fill="#b45309">Reliability</text>
+  <text x="796" y="192" text-anchor="middle" font-size="11" font-weight="bold" fill="#b45309">Test Suite</text>
+  <line x1="748" y1="198" x2="844" y2="198" stroke="#f5a623" stroke-width="0.8"/>
+
+  <!-- Test groups -->
+  <text x="748" y="214" font-size="9" font-weight="bold" fill="#555">Consistency</text>
+  <text x="748" y="228" font-size="9" fill="#777">· deterministic scoring</text>
+  <text x="748" y="240" font-size="9" fill="#777">· RAG reproducibility</text>
+  <text x="748" y="252" font-size="9" fill="#777">· query differentiation</text>
+
+  <line x1="748" y1="260" x2="844" y2="260" stroke="#eee" stroke-width="0.8"/>
+  <text x="748" y="274" font-size="9" font-weight="bold" fill="#555">Guardrails</text>
+  <text x="748" y="288" font-size="9" fill="#777">· bad input rejection</text>
+  <text x="748" y="300" font-size="9" fill="#777">· API failure fallback</text>
+  <text x="748" y="312" font-size="9" fill="#777">· empty edge cases</text>
+
+  <line x1="748" y1="320" x2="844" y2="320" stroke="#eee" stroke-width="0.8"/>
+  <text x="748" y="334" font-size="9" font-weight="bold" fill="#555">Scoring</text>
+  <text x="748" y="348" font-size="9" fill="#777">· score bounds</text>
+  <text x="748" y="360" font-size="9" fill="#777">· sorted output</text>
+  <text x="748" y="372" font-size="9" fill="#777">· diversity effect</text>
+  <text x="748" y="384" font-size="9" fill="#777">· genre lift</text>
+
+  <!-- 22 passed badge -->
+  <rect x="748" y="392" width="88" height="18" rx="9" fill="#d4edda" stroke="#4caf50" stroke-width="1"/>
+  <text x="792" y="404" text-anchor="middle" font-size="9" fill="#2e7d32" font-weight="bold">22 / 22 passing</text>
+
+  <!-- Arrow: Test Suite → Guardrails -->
+  <line x1="736" y1="190" x2="472" y2="182" stroke="#f5a623" stroke-width="1.2" stroke-dasharray="4,2" marker-end="url(#arr-orange)"/>
+  <!-- Arrow: Test Suite → Scoring Engine -->
+  <line x1="736" y1="330" x2="472" y2="468" stroke="#f5a623" stroke-width="1.2" stroke-dasharray="4,2" marker-end="url(#arr-orange)"/>
+
+  <!-- Human tester badge -->
+  <rect x="748" y="418" width="88" height="22" rx="8" fill="#f0ecff" stroke="#9b8fe0" stroke-width="1"/>
+  <text x="792" y="433" text-anchor="middle" font-size="9" fill="#5c4fcb" font-weight="bold">human runs pytest</text>
+
+  <!-- ═══════════════════════════════════════════════════════
+       HUMAN CHECKPOINT at output
+  ════════════════════════════════════════════════════════ -->
+  <rect x="420" y="648" width="52" height="18" rx="9" fill="#f0ecff" stroke="#9b8fe0" stroke-width="1"/>
+  <text x="446" y="660" text-anchor="middle" font-size="9" fill="#5c4fcb">human</text>
+
+  <!-- ═══════════════════════════════════════════════════════
+       LOGGING BANNER (bottom)
+  ════════════════════════════════════════════════════════ -->
+  <rect x="30" y="718" width="820" height="28" rx="6" fill="#ede9fe" stroke="#9b8fe0" stroke-width="1"/>
+  <text x="440" y="736" text-anchor="middle" font-size="10" fill="#5c4fcb">
+    Logger spans all components — every step (RAG retrieval, preference parse, scoring, explanation) written to logs/
+  </text>
+
+  <!-- ═══════════════════════════════════════════════════════
+       ARROW MARKERS
+  ════════════════════════════════════════════════════════ -->
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#555"/>
+    </marker>
+    <marker id="arr-green" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#4caf50"/>
+    </marker>
+    <marker id="arr-orange" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#f5a623"/>
+    </marker>
+    <marker id="arr-purple" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#9b8fe0"/>
+    </marker>
+  </defs>
+
+</svg>
