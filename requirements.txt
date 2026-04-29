@@ -1,4 +1,7 @@
+anthropic>=0.40.0
+numpy>=1.24.0
 pandas
 pytest
-streamlit
+python-dotenv>=1.0.0
+sentence-transformers>=3.0.0
 tabulate

@@ -1,130 +1,157 @@
 """
-Command line runner for the Music Recommender Simulation.
+Resonance — Agentic Music Recommendation System
+CodePath AI110 Final Project
 
 Run from the project root:
     python -m src.main
+
+Flow per query
+--------------
+1. RAG   — semantic search narrows the catalog to the most relevant candidates
+2. Agent — Claude parses the natural-language query into structured preferences
+3. Score — content-based scoring engine (mini-project core) ranks candidates
+4. Agent — Claude explains the final picks in natural language
 """
 
-from src.recommender import load_songs, recommend_songs, SCORING_MODES
+import sys
+import logging
 
+# Load .env before any other project imports so ANTHROPIC_API_KEY is available
 try:
-    from tabulate import tabulate
-    _HAS_TABULATE = True
+    from dotenv import load_dotenv
+    load_dotenv()
 except ImportError:
-    _HAS_TABULATE = False
+    pass  # dotenv is optional; user can export the variable manually
+
+from src.logger_setup import setup_logging
+setup_logging()
+
+from src import agent
+from src.rag import SongIndex
+from src.recommender import load_songs, recommend_songs
+
+logger = logging.getLogger(__name__)
+
+_BANNER = """
+╔══════════════════════════════════════════════════╗
+║  Resonance  —  Agentic Music Recommender         ║
+║  CodePath AI110 Final Project                    ║
+╠══════════════════════════════════════════════════╣
+║  Tell me what you're in the mood for.            ║
+║  Examples:                                       ║
+║    "chill lo-fi for late-night studying"         ║
+║    "upbeat pop to get ready in the morning"      ║
+║    "sad acoustic folk from the 2010s"            ║
+║  Type 'quit' to exit.                            ║
+╚══════════════════════════════════════════════════╝
+"""
+
+_SAFE_DEFAULTS = {"energy": 0.5, "preferred_tags": []}
+_RAG_TOP_N = 15
+_RECOMMEND_K = 5
 
 
-# ── Challenge 4: Visual summary table ────────────────────────────────────────
+# ── Input validation ──────────────────────────────────────────────────────────
 
-def print_table(
-    label: str,
-    user_prefs: dict,
-    results: list,
+def _validate(query: str) -> "str | None":
+    """Return an error message if the query should be rejected, else None."""
+    stripped = query.strip()
+    if not stripped:
+        return "Please describe what you'd like to hear."
+    if len(stripped) < 3:
+        return "That's too short — give me a bit more to work with."
+    if len(stripped) > 500:
+        return "Please keep your request under 500 characters."
+    return None
+
+
+# ── Core pipeline ─────────────────────────────────────────────────────────────
+
+def handle_query(
+    query: str,
+    songs: list,
+    index: SongIndex,
     mode: str = "balanced",
-    diversity: bool = False,
 ) -> None:
-    """Print a formatted table of recommendations using tabulate (or ASCII fallback)."""
-    mode_tag = f"[{mode}{'  diversity' if diversity else ''}]"
-    header = f"  {label}  {mode_tag}"
-    print(f"\n{'─'*70}")
-    print(header)
-    print(f"  Prefs: {user_prefs}")
-    print(f"{'─'*70}")
+    """Run the full RAG → parse → score → explain pipeline for one query."""
+    logger.info("=== Query received: %r ===", query)
 
-    rows = []
-    for rank, (song, score, reasons) in enumerate(results, 1):
-        reason_text = "\n".join(f"• {r}" for r in reasons)
-        rows.append([
-            rank,
-            song["title"],
-            f"{song['genre']} / {song['mood']}",
-            f"{song.get('popularity', '?')}  {song.get('release_decade', '?')}",
-            f"{score:.3f}",
-            reason_text,
-        ])
+    # 1. RAG: semantic retrieval
+    candidates = index.search(query, top_n=_RAG_TOP_N)
+    logger.info("RAG returned %d candidates.", len(candidates))
 
-    headers = ["#", "Title", "Genre / Mood", "Pop / Era", "Score", "Reasons"]
-
-    if _HAS_TABULATE:
-        print(tabulate(rows, headers=headers, tablefmt="fancy_grid"))
+    # 2. Agent: parse natural-language preferences
+    prefs = agent.parse_preferences(query)
+    if not prefs:
+        logger.warning("No preferences parsed; applying safe defaults.")
+        prefs = _SAFE_DEFAULTS.copy()
     else:
-        # Plain ASCII fallback when tabulate is not installed
-        col_w = [3, 22, 22, 12, 6, 48]
-        sep = "+" + "+".join("-" * (w + 2) for w in col_w) + "+"
+        prefs.setdefault("preferred_tags", [])
 
-        def fmt_row(cells):
-            lines_per_cell = [str(c).split("\n") for c in cells]
-            row_height = max(len(lines) for lines in lines_per_cell)
-            out = []
-            for i in range(row_height):
-                parts = []
-                for j, lines in enumerate(lines_per_cell):
-                    text = lines[i] if i < len(lines) else ""
-                    parts.append(f" {text:<{col_w[j]}} ")
-                out.append("|" + "|".join(parts) + "|")
-            return "\n".join(out)
+    # 3. Score: content-based ranking with diversity re-ranking
+    results = recommend_songs(
+        prefs, candidates, k=_RECOMMEND_K, mode=mode, diversity=True
+    )
+    logger.info("Scoring engine returned %d recommendations.", len(results))
 
-        print(sep)
-        print(fmt_row(headers))
-        print(sep.replace("-", "="))
-        for row in rows:
-            print(fmt_row(row))
-            print(sep)
+    if not results:
+        print("\n  No songs matched — try describing a different mood or genre.\n")
+        return
+
+    # 4. Agent: natural-language explanation
+    explanation = agent.generate_explanation(query, results)
+
+    # 5. Display
+    print("\n" + "─" * 62)
+    print(f'  Your request: "{query}"')
+    print("─" * 62)
+    for rank, (song, score, _reasons) in enumerate(results, 1):
+        decade = song.get("release_decade", "")
+        print(
+            f"  {rank}. {song['title']:30s}  {song['artist']}\n"
+            f"     {song['genre']:10s} / {song['mood']:12s}  "
+            f"{decade:6s}  score: {score:.3f}"
+        )
+    print(f"\n  {explanation}")
+    print("─" * 62 + "\n")
+    logger.info("Delivered %d recommendations.", len(results))
 
 
-# ── Demo profiles ─────────────────────────────────────────────────────────────
+# ── Entry point ───────────────────────────────────────────────────────────────
 
 def main() -> None:
-    songs = load_songs("data/songs.csv")
-    print(f"Loaded {len(songs)} songs  |  Available modes: {list(SCORING_MODES)}")
+    print(_BANNER)
 
-    # ── Challenge 1: New features in action ───────────────────────────────────
-    # Profile uses popularity target, era preference, and mood tags
-    pop_profile = {
-        "genre": "pop",
-        "mood": "happy",
-        "energy": 0.8,
-        "target_popularity": 80,         # Challenge 1: wants mainstream/popular songs
-        "preferred_decade": "2020s",     # Challenge 1: prefers recent music
-        "preferred_tags": ["uplifting", "euphoric"],  # Challenge 1: detailed mood tags
-    }
+    try:
+        songs = load_songs("data/songs.csv")
+    except FileNotFoundError:
+        logger.error("data/songs.csv not found. Run from the project root.")
+        sys.exit(1)
 
-    # ── Challenge 2: Same profile, three different scoring modes ─────────────
-    for mode in ("balanced", "genre_first", "energy_focused"):
-        results = recommend_songs(pop_profile, songs, k=5, mode=mode)
-        print_table("Pop / Happy / High Energy", pop_profile, results, mode=mode)
+    logger.info("Loaded %d songs from catalog.", len(songs))
+    index = SongIndex(songs)
 
-    # ── Challenge 2: Mood-first mode highlights mood-tag power ───────────────
-    nostalgic_profile = {
-        "genre": "folk",
-        "mood": "melancholic",
-        "energy": 0.35,
-        "preferred_tags": ["melancholic", "nostalgic"],
-        "preferred_decade": "2010s",
-        "likes_acoustic": True,
-        "target_popularity": 45,
-    }
-    results = recommend_songs(nostalgic_profile, songs, k=5, mode="mood_first")
-    print_table("Folk / Melancholic / Nostalgic", nostalgic_profile, results, mode="mood_first")
+    while True:
+        try:
+            query = input("You: ").strip()
+        except (EOFError, KeyboardInterrupt):
+            print("\nGoodbye!")
+            break
 
-    # ── Challenge 3: Diversity penalty comparison ─────────────────────────────
-    # Lofi profile has 3 lofi songs in catalog → diversity penalty kicks in
-    lofi_profile = {
-        "genre": "lofi",
-        "mood": "chill",
-        "energy": 0.38,
-        "likes_acoustic": True,
-        "preferred_tags": ["peaceful", "focused"],
-        "target_popularity": 60,
-    }
+        if query.lower() in {"quit", "exit", "q"}:
+            print("Goodbye!")
+            break
 
-    no_div = recommend_songs(lofi_profile, songs, k=5, mode="balanced", diversity=False)
-    with_div = recommend_songs(lofi_profile, songs, k=5, mode="balanced", diversity=True)
+        error = _validate(query)
+        if error:
+            print(f"  {error}\n")
+            continue
 
-    print_table("Lofi / Chill — no diversity", lofi_profile, no_div, mode="balanced", diversity=False)
-    print_table("Lofi / Chill — WITH diversity", lofi_profile, with_div, mode="balanced", diversity=True)
-
-    print()
+        try:
+            handle_query(query, songs, index)
+        except Exception:
+            logger.exception("Unexpected error while handling query.")
+            print("  Something went wrong — please try again.\n")
 
 
 if __name__ == "__main__":
