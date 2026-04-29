@@ -1,0 +1,21 @@
+id,title,artist,genre,mood,energy,tempo_bpm,valence,danceability,acousticness,popularity,release_decade,mood_tags,language,is_instrumental
+1,Sunrise City,Neon Echo,pop,happy,0.82,118,0.84,0.79,0.18,78,2020s,uplifting;euphoric,english,0
+2,Midnight Coding,LoRoom,lofi,chill,0.42,78,0.56,0.62,0.71,65,2020s,focused;peaceful,english,1
+3,Storm Runner,Voltline,rock,intense,0.91,152,0.48,0.66,0.10,72,2010s,aggressive;powerful,english,0
+4,Library Rain,Paper Lanterns,lofi,chill,0.35,72,0.60,0.58,0.86,58,2020s,peaceful;nostalgic,english,1
+5,Gym Hero,Max Pulse,pop,intense,0.93,132,0.77,0.88,0.05,85,2020s,motivational;euphoric,english,0
+6,Spacewalk Thoughts,Orbit Bloom,ambient,chill,0.28,60,0.65,0.41,0.92,45,2020s,dreamy;peaceful,english,1
+7,Coffee Shop Stories,Slow Stereo,jazz,relaxed,0.37,90,0.71,0.54,0.89,52,2010s,nostalgic;cozy,english,0
+8,Night Drive Loop,Neon Echo,synthwave,moody,0.75,110,0.49,0.73,0.22,68,2010s,nostalgic;dreamy,english,1
+9,Focus Flow,LoRoom,lofi,focused,0.40,80,0.59,0.60,0.78,61,2020s,focused;peaceful,english,1
+10,Rooftop Lights,Indigo Parade,indie pop,happy,0.76,124,0.81,0.82,0.35,74,2020s,uplifting;romantic,english,0
+11,Crown Up,Blaze Carter,hip-hop,confident,0.85,95,0.78,0.86,0.08,82,2020s,confident;powerful,english,0
+12,Ultraviolet,Synthex,electronic,euphoric,0.94,140,0.90,0.91,0.03,79,2020s,euphoric;energetic,english,1
+13,Morning Sonata,Clara Voss,classical,serene,0.22,66,0.74,0.28,0.98,40,1990s,peaceful;nostalgic,english,1
+14,Gravel Road Home,Dusty Bell,country,nostalgic,0.55,98,0.67,0.63,0.72,55,2010s,nostalgic;melancholic,english,0
+15,Velvet Moonlight,Aria Sol,r&b,romantic,0.48,85,0.76,0.72,0.45,71,2020s,romantic;dreamy,english,0
+16,Shatter Glass,Iron Veil,metal,aggressive,0.97,168,0.32,0.55,0.04,63,2010s,aggressive;powerful,english,0
+17,Empty Porch,Wren Hollow,folk,melancholic,0.31,74,0.38,0.42,0.91,38,2010s,melancholic;nostalgic,english,0
+18,Sunday Soul,The Groove Co.,soul,joyful,0.68,105,0.88,0.80,0.61,67,2020s,uplifting;joyful,english,0
+19,Circuit Breaker,Bass Reactor,drum & bass,frenetic,0.96,174,0.55,0.84,0.02,70,2020s,energetic;aggressive,english,1
+20,Café Lento,Marcos Dua,bossa nova,lazy,0.33,88,0.69,0.58,0.83,49,2010s,nostalgic;romantic,portuguese,0
