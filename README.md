@@ -6,7 +6,7 @@
 
 ## Demo Walkthrough
 
-> 📹 **[Watch the Loom demo](INSERT_LOOM_URL_HERE)** — end-to-end walkthrough showing 3 example queries and AI responses.
+> 📹 **[Watch the Loom demo](https://www.loom.com/share/37e4daa393aa4313aa549f7cc33b6808)** — end-to-end walkthrough showing 3 example queries and AI responses.
 
 The terminal walkthrough below shows the same interactions in text form. See [Sample Interactions](#sample-interactions) for full output examples.
 
@@ -142,8 +142,8 @@ pip install -r requirements.txt
 cp .env.example .env
 # Open .env and set ANTHROPIC_API_KEY=your_key_here
 
-# 5. Run the app
-python -m src.main
+# 5. Run the web app
+streamlit run app.py
 
 # 6. Run the test suite
 pytest
@@ -350,27 +350,29 @@ That gap — between what a ranked list implies and what the system actually kno
 
 ```
 resonance/
+├── app.py                      # Streamlit web UI entry point
 ├── assets/
 │   ├── architecture.svg        # Technical component diagram
 │   └── system_diagram.svg      # Data flow + human/testing diagram
 ├── data/
-│   └── songs.csv               # 20-song catalog with 15 features per song
+│   ├── songs.csv               # 20-song catalog with 15 features per song
+│   └── genre_profiles.json     # 15 genre descriptions for RAG augmentation
 ├── docs/                       # Course deliverables
 ├── logs/                       # Timestamped run logs (auto-created)
-├── notebooks/                  # Exploration notebooks
-├── prompts/                    # Prompt templates
+├── scripts/
+│   ├── evaluate.py             # Evaluation harness (21 checks)
+│   └── compare_fewshot.py      # Baseline vs. few-shot parser comparison
 ├── src/
 │   ├── agent.py                # Claude intent parser + explanation generator
 │   ├── logger_setup.py         # Logging configuration
-│   ├── main.py                 # Interactive CLI entry point
+│   ├── main.py                 # CLI entry point (alternative to web UI)
 │   ├── rag.py                  # Semantic search index (sentence-transformers)
 │   └── recommender.py          # VibeFinder scoring engine (mini-project core)
 ├── tests/
 │   ├── test_recommender.py     # Original VibeFinder unit tests
 │   └── test_reliability.py     # Consistency, guardrail, and scoring tests
 ├── .env.example                # API key template
-├── model_card.md               # VibeFinder 1.0 model card
-├── reflection.md               # Profile comparison reflections
+├── model_card.md               # Resonance model card
 └── requirements.txt
 ```
 
@@ -382,7 +384,9 @@ resonance/
 |---|---|
 | `anthropic` | Claude API — intent parsing and explanation |
 | `sentence-transformers` | Local embedding model for RAG semantic search |
+| `streamlit` | Web UI framework |
 | `numpy` | Cosine similarity computation |
 | `python-dotenv` | Load `ANTHROPIC_API_KEY` from `.env` |
-| `tabulate` | Formatted table output |
+| `tabulate` | Formatted table output (CLI mode) |
+| `torchvision` | Required by sentence-transformers |
 | `pytest` | Test runner |

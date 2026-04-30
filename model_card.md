@@ -22,7 +22,7 @@ Resonance inherits VibeFinder's scoring engine (`src/recommender.py`) unchanged 
 
 ## 3. Intended Use
 
-- **Primary use:** Interactive music discovery via natural-language queries in a CLI.
+- **Primary use:** Interactive music discovery via natural-language queries in a Streamlit web UI (`streamlit run app.py`) or CLI (`python -m src.main`).
 - **Audience:** Individual users exploring the system locally with their own API key.
 - **Scope:** Educational / portfolio demonstration. Not intended for production deployment, real-user data collection, or commercial music recommendation.
 
