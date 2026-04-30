@@ -14,9 +14,16 @@ RAG Enhancement (stretch feature):
 """
 
 import logging
+import os
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
+
+os.environ.setdefault("TRANSFORMERS_VERBOSITY", "error")
+os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
+
+logging.getLogger("transformers").setLevel(logging.ERROR)
+logging.getLogger("sentence_transformers").setLevel(logging.ERROR)
 
 logger = logging.getLogger(__name__)
 

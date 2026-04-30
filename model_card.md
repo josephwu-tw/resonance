@@ -1,153 +1,146 @@
-# Model Card: VibeFinder 1.0
+# Model Card: Resonance — Agentic Music Recommendation System
+
+> CodePath AI110 Final Project | Extended from **VibeFinder 1.0** (Modules 1–3)
 
 ---
 
-## 1. Model Name
+## 1. Model / System Name
 
-**VibeFinder 1.0**
+**Resonance v1.0**
 
-A content-based music recommender that matches songs to a user's stated taste profile using a weighted scoring formula.
-
----
-
-## 2. Goal / Task
-
-VibeFinder's job is to answer one question: *given what a user says they like, which songs in the catalog are the closest match?*
-
-It does this by scoring every song against the user's preferences and returning the top 5 highest-scoring tracks. It does **not** learn from what users skip or replay — it only uses the preferences the user explicitly provides before any music plays.
-
-The task is essentially a ranking problem: turn a user's four preferences (genre, mood, energy, acoustic taste) into a sorted list of songs.
+An agentic music recommendation system that extends VibeFinder 1.0 (the Module 1–3 mini project) into a full AI pipeline. Users describe what they want to hear in plain English; the system retrieves semantically relevant songs, parses structured preferences using Claude, scores and re-ranks candidates using the original VibeFinder scoring engine, and explains the results in natural language.
 
 ---
 
-## 3. Data Used
+## 2. Base Project: VibeFinder 1.0
 
-**Catalog size:** 20 songs in `data/songs.csv`
+VibeFinder 1.0 was a content-based music recommender built in Modules 1–3. Given four explicit preferences (genre, mood, energy, acoustic taste), it scored every song in a 20-track catalog using a weighted formula and returned the top-5 matches. It proved that a transparent scoring algorithm could produce sensible recommendations while revealing clear failure modes: genre-lock bias (30% genre weight dominated), silent failure when preferences couldn't be satisfied, and poor fallback when a genre had only one song in the catalog.
 
-**Features stored per song:**
+Resonance inherits VibeFinder's scoring engine (`src/recommender.py`) unchanged and wraps it with a Claude agentic layer and semantic retrieval.
 
-| Feature | Type | What it measures |
+---
+
+## 3. Intended Use
+
+- **Primary use:** Interactive music discovery via natural-language queries in a CLI.
+- **Audience:** Individual users exploring the system locally with their own API key.
+- **Scope:** Educational / portfolio demonstration. Not intended for production deployment, real-user data collection, or commercial music recommendation.
+
+---
+
+## 4. How the System Works
+
+### Pipeline (in order)
+
+| Step | Component | What it does |
 |---|---|---|
-| genre | text | Musical style label (pop, rock, lofi, etc.) |
-| mood | text | Emotional character (happy, chill, intense, etc.) |
-| energy | 0.0–1.0 | How loud and active a track feels |
-| valence | 0.0–1.0 | Musical positivity; higher = more upbeat |
-| acousticness | 0.0–1.0 | How acoustic vs. electronically produced it sounds |
-| danceability | 0.0–1.0 | How suitable for dancing |
-| tempo_bpm | number | Beats per minute (stored but not used in scoring) |
+| 1 | Input Guardrails | Rejects empty, too-short, or over-long queries before any AI call |
+| 2 | `plan_query()` | Claude reads the query + catalog genre counts; returns reasoning, scoring mode, and catalog warnings |
+| 3 | `SongIndex.search()` | Sentence-transformers embeds the query; returns top-15 semantically similar songs |
+| 4 | `parse_preferences()` | Claude extracts structured preferences (genre, mood, energy, tags) with a self-reported confidence score |
+| 5 | `recommend_songs()` | VibeFinder weighted scorer + diversity re-ranker produces top-5 |
+| 6 | `generate_explanation()` | Claude explains the picks in 2–3 natural-language sentences |
 
-**Genres in the catalog:** pop, lofi, rock, ambient, jazz, synthwave, indie pop, hip-hop, electronic, classical, country, r&b, metal, folk, soul, drum & bass, bossa nova
+### AI Models Used
 
-**Known data limits:**
-- Most genres have only 1 song. Lofi has 3; pop has 2. This makes the catalog uneven.
-- All songs and genres reflect Western, English-language music. No Afrobeats, K-pop, reggaeton, or other global genres are included.
-- Songs were invented for this simulation. Their feature values are estimated, not measured from real audio.
-- 20 songs is far too small for a real recommender. Spotify's catalog has over 100 million tracks.
+| Model | Role |
+|---|---|
+| `claude-haiku-4-5-20251001` | Planning, preference parsing, explanation generation |
+| `all-MiniLM-L6-v2` (sentence-transformers) | Song embedding and semantic retrieval |
 
 ---
 
-## 4. Algorithm Summary
+## 5. Data
 
-Here is how VibeFinder decides which songs to recommend, in plain language:
+**Primary catalog:** `data/songs.csv` — 20 songs, 15 features each (genre, mood, energy, valence, danceability, acousticness, tempo, popularity, decade, mood tags, language, instrumental flag, artist, title, id).
 
-**Step 1 — Score each song.** For every song in the catalog, the system asks: how well does this song match what the user asked for? It checks six things and awards points for each:
+**Second data source (RAG Enhancement):** `data/genre_profiles.json` — 15 genre descriptions providing rich conceptual vocabulary (e.g., "vinyl crackle", "neon-lit synths") augmented into song embeddings at index time.
 
-- **Genre match (30 points max):** Does the song's genre match the user's favorite? This is all-or-nothing — full points for a match, zero for a miss.
-- **Energy proximity (25 points max):** How close is the song's energy to the user's target? A song at exactly the right energy gets full points. The further away it is, the fewer points it earns.
-- **Mood match (20 points max):** Does the song's mood match the user's favorite? Also all-or-nothing.
-- **Valence (10 points max):** How upbeat/positive is the song? No user preference is set for this — the system just rewards higher valence as a background signal.
-- **Acousticness proximity (10 points max):** If the user likes acoustic music, the system rewards acoustic songs. If they don't, it rewards produced/electronic songs.
-- **Danceability (5 points max):** How danceable is the song? Another background signal with no user target.
-
-The total is a number between 0 and 1, where 1.0 would be a perfect match on everything.
-
-**Step 2 — Rank all songs.** Sort all 20 scores from highest to lowest.
-
-**Step 3 — Return the top 5.** The five songs with the highest scores become the recommendations.
+**Known data limitations:**
+- All 20 songs represent Western, English-language genres only. No Afrobeats, K-pop, reggaeton, or global music is represented.
+- Song feature values (energy, valence, etc.) were hand-estimated for simulation — not measured from real audio.
+- 20 songs is far too small for production use. Spotify's catalog has 100M+ tracks.
 
 ---
 
-## 5. Observed Behavior / Biases
+## 6. Limitations and Biases
 
-**Genre lock — the biggest bias found:**
-Because genre is worth 30% of the total score, a genre match alone can outrank songs that are emotionally much closer to what the user wants. In testing, "Gym Hero" (pop/intense) ranked #2 for a pop/happy user — not because it's a happy song, but because it shares the "pop" label. "Rooftop Lights" (indie pop/happy), which actually matches the user's mood and energy, ranked lower just because its genre label says "indie pop" instead of "pop."
+### Catalog cultural bias
+The most significant bias is in the catalog itself. All 20 songs reflect Western, English-language musical culture. A user from outside this frame would receive recommendations with no connection to their actual musical references, and the system would give no indication it had failed them.
 
-**Silent failure on conflicting preferences:**
-When the user asked for "rock + melancholic + high energy," no melancholic song appeared in the top 5. The only melancholic track in the catalog (Empty Porch, energy 0.31) is too quiet to compete with the energy score, so the mood preference is simply dropped. The system never tells the user this happened.
+### Genre-lock (inherited from VibeFinder)
+Genre and mood matching are binary — "indie pop" scores zero against a "pop" request despite being semantically close. Genre carries 22% weight in balanced mode, meaning a genre label mismatch is a heavy penalty regardless of how well the song matches in every other dimension.
 
-**Sparse fallback after niche genres:**
-For a jazz/relaxed profile, the system correctly surfaces Coffee Shop Stories (#1, score 0.939). But positions 2–5 are all lofi songs with no connection to jazz. Once the single jazz song is used, the system runs out of genre-relevant options and fills with "closest energy" matches instead.
+### Claude's inherited associations
+The intent parser inherits whatever associations Claude learned during training. "Aggressive" music may default to rock or metal even when the user means aggressive jazz. The system cannot flag when this interpretation drift occurs.
 
-**Neutral users get arbitrary results:**
-When no genre or mood preference is set, the two strongest scoring signals disappear. Rankings fall back on valence, acousticness, and danceability — small signals that were never designed to carry the recommendation alone. The "winner" in this case (Velvet Moonlight, r&b/romantic) had the closest energy to the neutral default of 0.5, which is essentially an accident.
+### Popularity bias
+Popularity weighting pushes results toward mainstream songs. In a larger real-world catalog this would systematically disadvantage independent and international artists.
+
+### Explanation authority
+Claude's explanations sound authoritative and personalized. A user is unlikely to question "these songs match your late-night focused energy" even if the underlying scoring weights produced a poor result. Fluent explanation can mask bad recommendations.
 
 ---
 
-## 6. Evaluation Process
+## 7. Evaluation and Testing Results
 
-Seven user profiles were run through the recommender to check whether results made intuitive sense.
+### Automated test suite
+**28/28 unit tests pass** across four categories:
 
-**Profiles tested:**
-
-| Profile | Expected behavior | What actually happened |
+| Category | Tests | Focus |
 |---|---|---|
-| Pop / Happy / energy 0.8 | Sunrise City at #1 | ✓ Score 0.967, felt correct |
-| Rock / Intense / energy 0.92 | Storm Runner at #1 | ✓ Score 0.918, felt correct |
-| Lofi / Chill / energy 0.38 (acoustic) | Lofi songs dominate | ✓ All top-3 were lofi |
-| Adversarial: High Energy + Melancholic | System should struggle | ✓ It did — melancholic mood was silently dropped |
-| Adversarial: No preferences set | Unpredictable output | ✓ Arbitrary winner based on minor signals |
-| Adversarial: Jazz / Relaxed (1 song) | Good #1, poor fallback | ✓ Only Coffee Shop Stories was relevant |
-| Adversarial: Classical + Aggressive + energy 0.97 | Impossible to satisfy | ✓ Metal song beat the classical song — energy overwhelmed genre |
+| Consistency | 3 | Same input → same output every time |
+| Guardrails | 9 | Bad input rejected; API failures degrade gracefully |
+| Confidence scoring | 6 | Confidence bounds, quality labels, field completeness |
+| Scoring invariants | 5 | Bounded scores, sorted output, diversity effect, genre lift |
 
-**Weight experiment run:**
-Genre weight was halved (0.30 → 0.15) and energy weight was doubled (0.25 → 0.50). The key change: "Rooftop Lights" jumped from #3 to #2 on the Pop/Happy profile, overtaking "Gym Hero." Rooftop Lights is a better emotional match for a happy pop listener, suggesting the original genre weight is slightly too aggressive.
+### Evaluation harness
+**`scripts/evaluate.py` — 21/21 predefined checks pass:**
+- Avg top recommendation score: **0.770** (above 0.75 = strong match)
+- Avg parse confidence (keyword fallback): **0.52**
 
-**What the experiment confirmed:**
-Changing a single weight shifts rankings in predictable and explainable ways. The system is transparent enough that you can trace exactly why a song moved up or down.
+### Few-shot specialization improvement
+`scripts/compare_fewshot.py` compares the baseline and enhanced keyword parsers on 5 ambiguous queries:
+- Field completeness: **+1.2 fields/query (+150%)**
+- Confidence: **+0.12 (+32%)**
+- Enhanced parser won on **5/5 queries**
 
----
-
-## 7. Intended Use and Non-Intended Use
-
-### Intended Use
-
-- **Classroom exploration:** Learning how content-based filtering works by reading the code and running it.
-- **Demonstrating tradeoffs:** Showing how weight choices affect recommendations and where simple scoring logic breaks down.
-- **Testing edge cases:** Running adversarial profiles to see how the algorithm handles conflicting or sparse preferences.
-
-### Not Intended For
-
-- **Real music discovery:** The 20-song catalog is far too small to be genuinely useful. A real listener would exhaust the relevant results immediately.
-- **Personalization over time:** The system has no memory. It cannot learn from what you skip, replay, or save. Every session starts from scratch.
-- **Non-Western or global music:** The catalog only contains styles common in Western markets. Using this system to recommend music for a user whose tastes fall outside pop, rock, lofi, or jazz would produce meaningless results.
-- **Production deployment:** There is no authentication, rate limiting, or error handling. It is a simulation script, not a service.
-- **Evaluating real songs:** Feature values were estimated by hand for a simulation. They do not reflect actual audio analysis and should not be used to characterize real tracks.
+### What the tests revealed
+- The diversity re-ranker *reduces* artist repetition but cannot eliminate it in a 20-song catalog — an initial test assertion assumed zero repeats and had to be corrected to match the actual contract.
+- Confidence scoring showed that queries a user considers reasonable ("play me something good") can score as low as 0.25 — revealing a gap between user expectations and parse signal.
+- The "classical + aggressive + high energy" profile correctly landed on moderate/weak match quality, confirming the impossible-preference detection works.
 
 ---
 
-## 8. Ideas for Improvement
+## 8. Responsible AI Considerations
 
-**1. Soft mood and genre matching**
-Replace the binary match (it matches or it doesn't) with a similarity score. For example, "chill" and "relaxed" could score 0.7 instead of 0.0, and "indie pop" could score 0.6 against "pop." This would dramatically improve results for users whose preferred genre is underrepresented in the catalog.
+### Could this be misused?
+Resonance is low-stakes — the worst outcome is a bad playlist. However, the same architecture pattern (natural-language intake → LLM parsing → scored retrieval → explanation generation) scales directly to higher-stakes domains: hiring, loan decisions, medical triage. In those contexts, the "explanation laundering" risk is real — fluent explanations could make biased decisions appear well-reasoned to users who cannot inspect the underlying weights.
 
-**2. Conflict detection before scoring**
-Before running the algorithm, check whether the user's preferences are likely contradictory — for example, if the catalog has no songs with both high energy and melancholic mood, warn the user and explain the tradeoff being made. Right now, the system silently favors one signal over another with no indication that it happened.
-
-**3. Result diversity enforcement**
-After scoring, add a rule that prevents the same genre from filling all five slots. If three lofi songs are in the top 5, replace the weakest one with the top-scoring song from a different genre. This would give users exposure to songs they might not have known to ask for.
+### What is built in
+- All inputs are validated and logged locally.
+- No user data is stored or transmitted beyond the single-session Claude API call.
+- Scoring logic is fully readable in `src/recommender.py` — no hidden model layers.
+- Fallback to deterministic keyword parsing when API is unavailable.
 
 ---
 
-## 9. Personal Reflection
+## 9. AI Collaboration — Reflection
 
-**Biggest learning moment:**
-The weight experiment was the clearest moment of insight. I assumed that energy would feel like the dominant feature — that's what makes a song "feel" intense or chill. But when I looked at the actual scores, genre was doing more work. "Gym Hero" kept appearing in the Pop/Happy results not because it felt happy, but because the word "pop" matched. That gap — between what a label says and what a song actually feels like — is exactly the problem that deep learning on raw audio tries to solve. A weighted formula can only see what's written in the spreadsheet; it has no idea what the music actually sounds like.
+### Helpful instance
+When adding confidence scoring, the suggestion was to include a `"confidence"` field directly inside the JSON Claude was already returning for preference parsing — so a single API call extracts both the structured preferences *and* a self-assessment of how clearly the query expressed them. This was cleaner than a separate API call and required only two lines of change. It worked exactly as described and became a core part of the system's reliability output.
 
-**How AI tools helped, and when I had to double-check them:**
-AI was most useful for generating the expanded song catalog and drafting the initial scoring formula structure. Both saved significant time. But I had to verify both carefully. The generated songs needed energy and valence values that were internally consistent — a "frenetic drum & bass" track should have high energy and low acousticness, and I had to check that those numbers reflected that. For the scoring formula, the AI suggested a reasonable starting structure, but the specific weights came from reasoning about what features matter most to a listener — that judgment call couldn't be delegated.
+### Flawed instance
+The initial diversity test was written with the assertion `all(c == 1 for c in artist_counts.values())` — meaning no artist should appear more than once in the top-5 with diversity enabled. The reasoning was that the greedy penalty algorithm would prevent any artist from being selected twice. That reasoning was wrong: the penalty reduces the probability of repetition but doesn't guarantee uniqueness. In a catalog with only two lo-fi artists, the penalized score of the second LoRoom song was still higher than any non-lo-fi alternative. The test passed on the first profile tested, then failed on a lo-fi-heavy profile. The fix required understanding *why* the algorithm works rather than trusting the initial assertion.
 
-**What surprised me about how simple algorithms can still "feel" like recommendations:**
-The most surprising thing was that three numbers — genre match, energy proximity, mood match — were enough to produce results that felt largely correct for normal profiles. Sunrise City (#1 for pop/happy) and Storm Runner (#1 for rock/intense) both "felt right" immediately. The system had no understanding of music whatsoever; it just compared labels and numbers. That result felt like it should require more. What it actually revealed is that listeners use genre and mood as shortcuts too — and when the shortcuts align, the math looks surprisingly smart.
+### What I learned about AI-assisted development
+The Claude API call in `src/agent.py` is six lines. What took real thought was deciding what to pass in, what to do when it fails, how to validate the JSON output, and how to connect the result to a system designed before Claude was part of it. The hardest part of AI system development is not the AI call — it's the architecture around it: the guardrails, the fallbacks, the logging, and the honest measurement of what the system actually does versus what it appears to do.
 
-**What I'd try next:**
-The most interesting extension would be adding implicit feedback: instead of asking the user to declare their preferences upfront, present them with a few songs and ask "does this match your mood right now?" — then infer the weights from their responses. That would turn this from a declarative system (you tell it what you want) into an adaptive one (it learns what you want), which is much closer to how Spotify's Discover Weekly actually works. Technically, it would require treating the weights as variables and updating them based on user ratings — a simple form of gradient descent in miniature.
+---
+
+## 10. Future Work
+
+- **Larger, diverse catalog:** Extending to 500+ songs with global genres would immediately fix the cultural bias and sparse-genre fallback problem.
+- **Soft genre/mood matching:** Replace binary genre match with a similarity score so "indie pop" scores 0.7 against "pop" rather than 0.0.
+- **Conflict detection:** Before scoring, check whether the user's preferences are satisfiable (e.g., "classical + aggressive + energy 0.99") and explain the tradeoff rather than silently dropping a signal.
+- **Implicit feedback loop:** Let users rate or skip recommendations so the system can refine preference weights over the session — turning it from declarative ("you told me") to adaptive ("I learned from you").

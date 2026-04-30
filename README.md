@@ -4,6 +4,49 @@
 
 ---
 
+## Demo Walkthrough
+
+> 📹 **[Watch the Loom demo](INSERT_LOOM_URL_HERE)** — end-to-end walkthrough showing 3 example queries and AI responses.
+
+The terminal walkthrough below shows the same interactions in text form. See [Sample Interactions](#sample-interactions) for full output examples.
+
+**Query 1 — Late-night studying:**
+```
+You: chill lo-fi beats for late night studying
+
+  Planning…
+  → User wants low-energy focused music for studying; mood and tags are primary.
+  ⚠  Only 3 lo-fi songs in catalog — expect limited variety.
+  → Scoring mode: mood_first
+
+  Parse confidence: 92%  |  Match quality: strong  (top score: 0.847)
+  1. Library Rain          Paper Lanterns   lofi / chill    2020s  score: 0.847
+  2. Midnight Coding       LoRoom           lofi / chill    2020s  score: 0.821
+  ...
+```
+
+**Query 2 — Morning energy:**
+```
+You: upbeat pop song to get me hyped in the morning
+
+  Planning…
+  → User wants high-energy mainstream pop for motivation; genre is primary.
+  → Scoring mode: genre_first
+
+  Parse confidence: 88%  |  Match quality: strong  (top score: 0.967)
+  1. Sunrise City          Neon Echo        pop  / happy    2020s  score: 0.967
+  ...
+```
+
+**Query 3 — Vague query (guardrail + low confidence):**
+```
+You: hi
+
+  That's too short — give me a bit more to work with.
+```
+
+---
+
 ## Original Project: VibeFinder 1.0
 
 **VibeFinder 1.0** was a content-based music recommender built during Modules 1–3 of AI110. Given a user's explicitly stated preferences — favorite genre, mood, target energy level, and acoustic preference — it scored every song in a 20-track catalog using a weighted formula and returned the top-5 closest matches. The project demonstrated how a transparent scoring algorithm (no black box) could produce surprisingly sensible recommendations while also revealing clear failure modes: genre-lock bias, silent conflict handling when preferences couldn't be satisfied, and poor fallback behavior when a genre had only one song in the catalog. It established the scoring engine and data model that Resonance is built on.

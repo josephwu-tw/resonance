@@ -4,4 +4,6 @@ pandas
 pytest
 python-dotenv>=1.0.0
 sentence-transformers>=3.0.0
+streamlit
 tabulate
+torchvision
