@@ -8,8 +8,6 @@
 
 > 📹 **[Watch the Loom demo](https://www.loom.com/share/37e4daa393aa4313aa549f7cc33b6808)** — end-to-end walkthrough showing 3 example queries and AI responses.
 
-The terminal walkthrough below shows the same interactions in text form. See [Sample Interactions](#sample-interactions) for full output examples.
-
 **Query 1 — Late-night studying:**
 ```
 You: chill lo-fi beats for late night studying
